@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Logo from '../assets/Logo.png';
+import axios from 'axios';
 import { device } from '../media';
 
 //MUI
-import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import LoginIcon from '@mui/icons-material/Login';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import CategoryIcon from '@mui/icons-material/Category';
+import EmailIcon from '@mui/icons-material/Email';
 
 //Icons
 import Facebook from '../assets/icons/facebook.png';
@@ -199,6 +196,62 @@ const H6 = styled.h6`
 `;
 
 const Signup = () => {
+  const [user, setUser] = useState({
+    username: '',
+    email: '',
+    userCategory: '',
+    password: '',
+    validpass: '',
+  });
+
+  const Alert = styled.p`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  `;
+
+  const onChangeHandle = (e) => {
+    const newUser = { ...user };
+    newUser[e.target.id] = e.target.value;
+    setUser(newUser);
+    `  `;
+    console.log(newUser);
+  };
+
+  const [validatedpass, setValidatedPass] = useState('');
+
+  useEffect(() => {
+    let status = '';
+    try {
+      if (user.password !== user.validpass) {
+        status = 'Password does not match!';
+        setValidatedPass(status);
+      } else status = 'Password Match!';
+      setValidatedPass(status);
+    } catch (err) {
+      status = err;
+    }
+  }, [user.password, user.validpass]);
+
+  const onClickAddSubmit = async (e) => {
+    e.preventDefault();
+    const NewUser = await axios.post('http://localhost:4000/api/auth/signup', {
+      email: user.email,
+      password: user.password,
+      userCategory: user.userCategory,
+      username: user.username,
+    });
+    setUser({
+      username: '',
+      email: '',
+      userCategory: '',
+      password: '',
+      validpass: '',
+    });
+    console.log(NewUser);
+  };
+
   return (
     <motion.div
       initial={{ width: 0, opacity: 0 }}
@@ -211,61 +264,85 @@ const Signup = () => {
       <Container>
         <LoginWrapper>
           {/* <Image src={Logo}></Image> */}
-          <Title>Signup Using</Title>
-          <IconsContainer>
-            <Icons src={Facebook} alt="facebook"></Icons>
-            <Icons src={Gmail} alt="gmail"></Icons>
-            <Icons src={Linkedin} alt="linkedin"></Icons>
-          </IconsContainer>
-          <HrContainer>
-            <Hr />
-            Or
-            <Hr />
-          </HrContainer>
+          <Title>Signup</Title>
+
           <H4> Email Address </H4>
+
           <InputWrapper>
             <EmailIcon />
-            <Input placeholder="Username@user.com" type="text" />
+            <Input
+              placeholder="Username@user.com"
+              type="text"
+              id="email"
+              onChange={(e) => {
+                onChangeHandle(e);
+              }}
+            />
           </InputWrapper>
-
           <H4> User Name </H4>
           <InputWrapper>
             <PersonIcon />
-            <Input placeholder="User Name" type="text" />
+            <Input
+              placeholder="User Name"
+              type="text"
+              id="username"
+              onChange={(e) => {
+                onChangeHandle(e);
+              }}
+            />
           </InputWrapper>
-
           <H4> User Category </H4>
           <InputWrapper>
             <CategoryIcon />
-            <Select id="category">
-              <Option value="Viewer">Viewer</Option>
+            <Select
+              id="userCategory"
+              onChange={(e) => {
+                onChangeHandle(e);
+              }}
+            >
+              <Option value="Viewer" select>
+                Viewer
+              </Option>
               <Option value="Animator">Animator</Option>
               <Option value="Employer">Employer</Option>
             </Select>
           </InputWrapper>
-
           <H4> Password </H4>
-
           <InputWrapper>
             <LockIcon />
-            <PasswordWrapper>
-              <Input placeholder="Password" type="password" />
-              <Input placeholder="Confirm Password" type="password" />
-            </PasswordWrapper>
-          </InputWrapper>
+            <>
+              <PasswordWrapper>
+                <Input
+                  placeholder="Password"
+                  type="password"
+                  id="password"
+                  onChange={(e) => {
+                    onChangeHandle(e);
+                  }}
+                />
+                <Input
+                  placeholder="Confirm Password"
+                  type="password"
+                  id="validpass"
+                  onChange={(e) => {
+                    onChangeHandle(e);
+                  }}
+                />
 
+                <Alert>{validatedpass}</Alert>
+              </PasswordWrapper>
+            </>
+          </InputWrapper>
           <InputWrapper>
             <input type="checkbox" name="" id="" />
             <H6>I have read and understood the TERMS AND CONDITIONS</H6>
           </InputWrapper>
-
           <InputWrapper>
-            <Button>
+            <Button onClick={onClickAddSubmit}>
               SignUp
               <LoginIcon />
             </Button>
           </InputWrapper>
-
           <Options>
             <Link to={'/signin'} style={{ textDecoration: 'none' }}>
               <H6>Already Signed up? </H6>
